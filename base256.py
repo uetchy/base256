@@ -1,84 +1,109 @@
 #!/usr/bin/env python3
-# usage: python3 base256.py text
+"""
+usage: python3 base256.py text
+"""
 
 import sys
 import math
 import random
 from PIL import Image, ImageDraw
 
-encodingBit = 8  # 2^8 = 256
-pixelWidth = 10
-pixelHeight = 50
+ENCODING_BIT = 8  # 2^8 = 256
+PIXEL_WIDTH = 10
+PIXEL_HEIGHT = 50
 
 
 def encode(text):
-    return [int(x) for x in text.encode('utf8')]
+  """
+  Encode to base64
+  """
+
+  return [int(x) for x in text.encode('utf8')]
 
 
-def decode(indexMap):
-    return bytes(indexMap).decode('utf8')
+def decode(index_map):
+  """
+  Decode from base64
+  """
+  return bytes(index_map).decode('utf8')
 
 
-def createImage(data, outfile='output.png'):
-    img = Image.new('RGB', (len(data) * pixelWidth, pixelHeight), color='black')
-    draw = ImageDraw.Draw(img)
-    for i, n in enumerate(data):
-        draw.rectangle(
-            (i * pixelWidth, 0, i * pixelWidth + pixelWidth, pixelHeight),
-            fill=(n, 0, 0))
-    img.save(outfile)
+def create_image(data, outfile='output.png'):
+  """
+  Generate and save image
+  """
+  img = Image.new('RGB', (len(data) * PIXEL_WIDTH, PIXEL_HEIGHT), color='black')
+  draw = ImageDraw.Draw(img)
+  for i, grad in enumerate(data):
+    draw.rectangle((i * PIXEL_WIDTH, 0, i * PIXEL_WIDTH + PIXEL_WIDTH, PIXEL_HEIGHT),
+                   fill=(grad, 0, 0))
+  img.save(outfile)
 
 
-def randomFiller(n):
-    filler = lambda: math.floor(random.random() * 2) * 125
-    return (filler(), filler(), filler())
+def random_filler(_):
+  """
+  Random Filter
+  """
+  filler = lambda: math.floor(random.random() * 2) * 125
+  return (filler(), filler(), filler())
 
 
-def yellowFiller(n):
-    return (n, n, 0)
+def yellow_filler(grad):
+  """
+  Yellow Filter
+  """
+  return (grad, grad, 0)
 
 
-def createSquareImage(data, outfile='output.png'):
-    imageLength = math.ceil(math.sqrt(len(data)))
-    pixelLength = 128
-    length = imageLength * pixelLength
+def create_square_image(data, outfile='output.png'):
+  """
+  Generate square image
+  """
 
-    img = Image.new('RGB', (length, length), color='black')
-    draw = ImageDraw.Draw(img)
-    for i, n in enumerate(data):
-        rowIndex = math.floor(i / imageLength)
-        columnIndex = i % imageLength
-        draw.rectangle(((columnIndex * pixelLength, rowIndex * pixelLength),
-                        (columnIndex * pixelLength + pixelLength,
-                         rowIndex * pixelLength + pixelLength)),
-                       fill=yellowFiller(n))
-    img.save(outfile)
+  image_length = math.ceil(math.sqrt(len(data)))
+  pixel_length = 128
+  length = image_length * pixel_length
+
+  img = Image.new('RGB', (length, length), color='black')
+  draw = ImageDraw.Draw(img)
+  for i, grad in enumerate(data):
+    row_index = math.floor(i / image_length)
+    column_index = i % image_length
+    draw.rectangle(
+        ((column_index * pixel_length, row_index * pixel_length),
+         (column_index * pixel_length + pixel_length, row_index * pixel_length + pixel_length)),
+        fill=yellow_filler(grad))
+  img.save(outfile)
 
 
-def createDuplexImage(data, outfile='output.png'):
-    rowLength = math.ceil(len(data) / 3)
-    img = Image.new('RGB', (rowLength * pixelWidth, pixelHeight), color='black')
-    draw = ImageDraw.Draw(img)
-    for i, n in enumerate(data):
-        rgbIndex = math.floor(i / rowLength)
-        rowIndex = i % rowLength
-        print(rgbIndex, rowIndex)
-        pixel = list(img.getpixel((rowIndex, 0)))
-        pixel[rgbIndex] = n
-        print(pixel)
-        draw.rectangle((rowIndex * pixelWidth, 0,
-                        rowIndex * pixelWidth + pixelWidth, pixelHeight),
-                       fill=tuple(pixel))
-    img.save(outfile)
+def create_duplex_image(data, outfile='output.png'):
+  """
+  Create duplex image
+  """
+
+  row_length = math.ceil(len(data) / 3)
+  img = Image.new('RGB', (row_length * PIXEL_WIDTH, PIXEL_HEIGHT), color='black')
+  draw = ImageDraw.Draw(img)
+  for i, grad in enumerate(data):
+    rgb_index = math.floor(i / row_length)
+    row_index = i % row_length
+    print(rgb_index, row_index)
+    pixel = list(img.getpixel((row_index, 0)))
+    pixel[rgb_index] = grad
+    print(pixel)
+    draw.rectangle(
+        (row_index * PIXEL_WIDTH, 0, row_index * PIXEL_WIDTH + PIXEL_WIDTH, PIXEL_HEIGHT),
+        fill=tuple(pixel))
+  img.save(outfile)
 
 
 if __name__ == '__main__':
-    print('Base' + str(2**encodingBit))
-    source = sys.argv[1]
-    print(source)
-    with open(source) as f:
-        source = ''.join(f.readlines())
-    encoded = encode(source)
-    createSquareImage(encoded)
-    decoded = decode(encoded)
-    print('復元テスト: ' + decoded)
+  print('Base' + str(2**ENCODING_BIT))
+  SOURCE = sys.argv[1]
+  print(SOURCE)
+  with open(SOURCE) as f:
+    SOURCE = ''.join(f.readlines())
+  ENCODED = encode(SOURCE)
+  create_square_image(ENCODED)
+  DECODED = decode(ENCODED)
+  print('復元テスト: ' + DECODED)

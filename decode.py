@@ -1,22 +1,31 @@
+"""
+Decode script
+"""
 import sys
 from PIL import Image
 import numpy as np
 
 
-def decode(indexMap):
-    return bytes(indexMap).decode('utf8')
+def decode(index_map):
+  """
+  Decode string
+  """
+  return bytes(index_map).decode('utf8')
 
 
-def decodeImage(image, stride=30):
-    data = np.array(image)
-    row = list(data[0, :, 0])  # 0, :, 0 for red pixels
-    indexMap = [row[x] for x in range(0, len(row), stride)]
-    print(indexMap)
-    return decode(indexMap)
+def decode_image(image, stride=30):
+  """
+  Decode image
+  """
+  data = np.array(image)
+  row = list(data[0, :, 0])  # 0, :, 0 for red pixels
+  index_map = [row[x] for x in range(0, len(row), stride)]
+  print(index_map)
+  return decode(index_map)
 
 
 if __name__ == '__main__':
-    source = sys.argv[1]
-    stride = int(sys.argv[2])
-    data = decodeImage(Image.open(source), stride)
-    print(data)
+  SOURCE = sys.argv[1]
+  STRIDE = int(sys.argv[2])
+  DATA = decode_image(Image.open(SOURCE), STRIDE)
+  print(DATA)
